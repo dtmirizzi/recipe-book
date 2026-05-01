@@ -23,9 +23,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   providers: [
     // Magic-link via Resend; only active when RESEND_API_KEY is set.
+    // IMPORTANT: pass `apiKey` explicitly. Auth.js's Resend provider
+    // looks for `AUTH_RESEND_KEY` by default — our env var is named
+    // `RESEND_API_KEY`, so we must wire it through.
     ...(flags.hasResendKey
       ? [
           Resend({
+            apiKey: env.RESEND_API_KEY,
             from: env.EMAIL_FROM ?? 'Recipe Box <hello@example.com>',
           }),
         ]
