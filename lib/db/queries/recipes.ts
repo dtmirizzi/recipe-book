@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, desc, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
-import { recipes, recipeIngredients, recipeSteps, recipeMedia } from '@/db/schema';
+import { recipes, recipeIngredients, recipeSteps, recipeMedia, roundtableMembers, users } from '@/db/schema';
 import type { Recipe } from '@/db/schema';
 
 export type LibraryFilters = {
@@ -71,28 +71,87 @@ export async function listRecipes(userId: string, filters: LibraryFilters = {}):
 }
 
 export async function getRecipe(userId: string, id: string) {
+  // Owner-only fast path; preserves the existing semantic for write/edit callers.
   const recipe = await db.query.recipes.findFirst({
     where: and(eq(recipes.id, id), eq(recipes.userId, userId), isNull(recipes.deletedAt)),
   });
   if (!recipe) return null;
   const [ings, steps, media] = await Promise.all([
-    db
-      .select()
-      .from(recipeIngredients)
-      .where(eq(recipeIngredients.recipeId, id))
-      .orderBy(recipeIngredients.ordinal),
-    db
-      .select()
-      .from(recipeSteps)
-      .where(eq(recipeSteps.recipeId, id))
-      .orderBy(recipeSteps.ordinal),
-    db
-      .select()
-      .from(recipeMedia)
-      .where(eq(recipeMedia.recipeId, id))
-      .orderBy(recipeMedia.ordinal),
+    db.select().from(recipeIngredients).where(eq(recipeIngredients.recipeId, id)).orderBy(recipeIngredients.ordinal),
+    db.select().from(recipeSteps).where(eq(recipeSteps.recipeId, id)).orderBy(recipeSteps.ordinal),
+    db.select().from(recipeMedia).where(eq(recipeMedia.recipeId, id)).orderBy(recipeMedia.ordinal),
   ]);
   return { ...recipe, ingredients: ings, steps, media };
+}
+
+/**
+ * Fetch a recipe a viewer is allowed to see: they own it, OR it's public,
+ * OR they share a roundtable with the owner. Returns the recipe + author info
+ * + an `isOwner` flag.
+ */
+export async function getViewableRecipe(viewerId: string, id: string) {
+  const recipe = await db.query.recipes.findFirst({
+    where: and(eq(recipes.id, id), isNull(recipes.deletedAt)),
+  });
+  if (!recipe) return null;
+
+  const isOwner = recipe.userId === viewerId;
+  let allowed = isOwner || recipe.visibility === 'public';
+  if (!allowed) {
+    // Shared via roundtable: do viewer + owner share any roundtable?
+    const shared = await db
+      .select({ rt: roundtableMembers.roundtableId })
+      .from(roundtableMembers)
+      .where(eq(roundtableMembers.userId, viewerId));
+    if (shared.length > 0) {
+      const ownerRows = await db
+        .select({ rt: roundtableMembers.roundtableId })
+        .from(roundtableMembers)
+        .where(
+          and(
+            eq(roundtableMembers.userId, recipe.userId),
+            inArray(
+              roundtableMembers.roundtableId,
+              shared.map((s) => s.rt),
+            ),
+          ),
+        );
+      allowed = ownerRows.length > 0;
+    }
+  }
+  if (!allowed) return null;
+
+  const [ings, steps, media, author] = await Promise.all([
+    db.select().from(recipeIngredients).where(eq(recipeIngredients.recipeId, id)).orderBy(recipeIngredients.ordinal),
+    db.select().from(recipeSteps).where(eq(recipeSteps.recipeId, id)).orderBy(recipeSteps.ordinal),
+    db.select().from(recipeMedia).where(eq(recipeMedia.recipeId, id)).orderBy(recipeMedia.ordinal),
+    db
+      .select({ id: users.id, name: users.name, email: users.email, image: users.image })
+      .from(users)
+      .where(eq(users.id, recipe.userId))
+      .limit(1),
+  ]);
+  return {
+    ...recipe,
+    ingredients: ings,
+    steps,
+    media,
+    author: author[0] ?? null,
+    isOwner,
+  };
+}
+
+export async function setVisibility(
+  userId: string,
+  id: string,
+  visibility: 'public' | 'private',
+): Promise<boolean> {
+  const rows = await db
+    .update(recipes)
+    .set({ visibility, updatedAt: new Date() })
+    .where(and(eq(recipes.id, id), eq(recipes.userId, userId)))
+    .returning({ id: recipes.id });
+  return rows.length > 0;
 }
 
 export type RecipeDraftInput = {

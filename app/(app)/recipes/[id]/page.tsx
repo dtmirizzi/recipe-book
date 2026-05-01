@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth/session';
-import { getRecipe } from '@/lib/db/queries/recipes';
+import { getViewableRecipe } from '@/lib/db/queries/recipes';
+import { isStarred, starCounts } from '@/lib/db/queries/stars';
 import { RecipeDetailClient } from './recipe-detail-client';
 import { DeleteButton } from './delete-button';
+import { StarButton } from './star-button';
 
 export const metadata = { title: 'Recipe' };
 
@@ -14,13 +16,22 @@ export default async function RecipeDetailPage({
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const recipe = await getRecipe(user.id, id);
+  const recipe = await getViewableRecipe(user.id, id);
   if (!recipe) notFound();
+
+  const [starred, counts] = await Promise.all([
+    isStarred(user.id, recipe.id),
+    starCounts([recipe.id]),
+  ]);
+  const stars = counts.get(recipe.id) ?? 0;
+
+  const author = recipe.author;
+  const authorLabel = author ? author.name ?? author.email.split('@')[0] : null;
 
   return (
     <div className="container-rb py-6 sm:py-10 max-w-3xl">
-      <Link href="/library" className="t-meta">
-        ← Library
+      <Link href={recipe.isOwner ? '/library' : '/discover'} className="t-meta">
+        ← {recipe.isOwner ? 'Library' : 'Discover'}
       </Link>
 
       {recipe.coverImageUrl ? (
@@ -56,16 +67,25 @@ export default async function RecipeDetailPage({
               {t}
             </span>
           ))}
+          {recipe.visibility === 'public' ? (
+            <span className="chip" style={{ fontSize: 11 }}>
+              Public
+            </span>
+          ) : null}
         </div>
         <h1 className="t-h1" style={{ fontSize: 'clamp(28px, 6vw, 44px)' }}>
           {recipe.title}
         </h1>
+        {!recipe.isOwner && authorLabel ? (
+          <div className="t-meta mt-2">by {authorLabel}</div>
+        ) : null}
         {recipe.description ? (
           <p className="t-body soft mt-3">{recipe.description}</p>
         ) : null}
         <div className="t-meta mt-3">
           {recipe.totalMinutes ? `${recipe.totalMinutes} minutes · ` : ''}
           {recipe.baseServings} servings (as written)
+          {stars > 0 ? ` · ★ ${stars}` : ''}
           {recipe.sourceUrl ? (
             <>
               {' · '}
@@ -85,10 +105,16 @@ export default async function RecipeDetailPage({
       <RecipeDetailClient recipe={recipe} />
 
       <div className="mt-12 flex gap-3 flex-wrap">
-        <Link href={`/recipes/${recipe.id}/edit`} className="btn">
-          Edit
-        </Link>
-        <DeleteButton id={recipe.id} />
+        {recipe.isOwner ? (
+          <>
+            <Link href={`/recipes/${recipe.id}/edit`} className="btn">
+              Edit
+            </Link>
+            <DeleteButton id={recipe.id} />
+          </>
+        ) : (
+          <StarButton recipeId={recipe.id} initialStarred={starred} />
+        )}
       </div>
     </div>
   );

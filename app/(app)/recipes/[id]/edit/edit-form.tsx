@@ -17,17 +17,30 @@ export function EditForm({
   coverImageUrl,
   stepRefs,
   initialMedia,
+  initialVisibility,
 }: {
   id: string;
   draft: RecipeDraft;
   coverImageUrl: string | null;
   stepRefs: StepRef[];
   initialMedia: RecipeMedia[];
+  initialVisibility: 'private' | 'public';
 }) {
   const [d, setD] = useState<RecipeDraft>(draft);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visibility, setVis] = useState<'private' | 'public'>(initialVisibility);
   const router = useRouter();
+
+  async function toggleVisibility() {
+    const next = visibility === 'public' ? 'private' : 'public';
+    setVis(next);
+    await fetch(`/api/recipes/${id}/visibility`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ visibility: next }),
+    });
+  }
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
@@ -56,6 +69,24 @@ export function EditForm({
 
   return (
     <form onSubmit={onSave} className="flex flex-col gap-6">
+      <div className="card flex items-center justify-between gap-3">
+        <div>
+          <div className="t-eyebrow">Visibility</div>
+          <div className="t-meta mt-1">
+            {visibility === 'public'
+              ? 'Public — searchable in Discover by anyone.'
+              : 'Private — only you and your roundtables can see it.'}
+          </div>
+        </div>
+        <button
+          type="button"
+          className={visibility === 'public' ? 'btn btn-primary' : 'btn'}
+          onClick={toggleVisibility}
+        >
+          {visibility === 'public' ? 'Make private' : 'Make public'}
+        </button>
+      </div>
+
       <MediaEditor
         recipeId={id}
         initialCover={coverImageUrl}

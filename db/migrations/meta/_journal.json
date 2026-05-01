@@ -15,6 +15,13 @@
       "when": 1777678404467,
       "tag": "0001_vengeful_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777679664458,
+      "tag": "0002_hesitant_shiva",
+      "breakpoints": true
     }
   ]
 }

@@ -96,6 +96,8 @@ export const ingredientCategoryEnum = pgEnum('ingredient_category', [
 export const captureKindEnum = pgEnum('capture_kind', ['url', 'photo', 'text']);
 export const mediaKindEnum = pgEnum('media_kind', ['image', 'video', 'embed']);
 export const mediaProviderEnum = pgEnum('media_provider', ['youtube', 'vimeo']);
+export const visibilityEnum = pgEnum('recipe_visibility', ['private', 'public']);
+export const roundtableRoleEnum = pgEnum('roundtable_role', ['owner', 'member']);
 export const captureStatusEnum = pgEnum('capture_status', [
   'queued',
   'processing',
@@ -140,6 +142,7 @@ export const recipes = pgTable(
     sourcePhotoUrl: text('source_photo_url'),
     sourceText: text('source_text'),
     coverImageUrl: text('cover_image_url'),
+    visibility: visibilityEnum('visibility').notNull().default('private'),
     // Embedding stored as numeric[]; on real Postgres+pgvector this can be a vector(1536).
     // We keep it as a JSON-encoded number array for portability with the local stack.
     embedding: jsonb('embedding').$type<number[] | null>(),
@@ -150,6 +153,59 @@ export const recipes = pgTable(
   (t) => ({
     userCreatedIdx: index('recipes_user_created_idx').on(t.userId, t.createdAt),
     titleIdx: index('recipes_title_idx').on(t.title),
+    visibilityIdx: index('recipes_visibility_idx').on(t.visibility),
+  }),
+);
+
+export const recipeStars = pgTable(
+  'recipe_stars',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    recipeId: uuid('recipe_id')
+      .notNull()
+      .references(() => recipes.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.recipeId] }),
+    recipeIdx: index('recipe_stars_recipe_idx').on(t.recipeId),
+    userIdx: index('recipe_stars_user_idx').on(t.userId, t.createdAt),
+  }),
+);
+
+export const roundtables = pgTable(
+  'roundtables',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    ownerId: uuid('owner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    inviteCode: text('invite_code').notNull().unique(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    ownerIdx: index('roundtables_owner_idx').on(t.ownerId),
+  }),
+);
+
+export const roundtableMembers = pgTable(
+  'roundtable_members',
+  {
+    roundtableId: uuid('roundtable_id')
+      .notNull()
+      .references(() => roundtables.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: roundtableRoleEnum('role').notNull().default('member'),
+    joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.roundtableId, t.userId] }),
+    userIdx: index('roundtable_members_user_idx').on(t.userId),
   }),
 );
 
@@ -292,3 +348,6 @@ export type PantryItem = typeof pantryItems.$inferSelect;
 export type CaptureJob = typeof captureJobs.$inferSelect;
 export type RecipeMedia = typeof recipeMedia.$inferSelect;
 export type RecipeMediaInsert = typeof recipeMedia.$inferInsert;
+export type Roundtable = typeof roundtables.$inferSelect;
+export type RoundtableMember = typeof roundtableMembers.$inferSelect;
+export type RecipeStar = typeof recipeStars.$inferSelect;

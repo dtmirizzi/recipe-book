@@ -53,6 +53,7 @@ export default async function EditRecipePage({
           coverImageUrl={recipe.coverImageUrl}
           stepRefs={recipe.steps.map((s, i) => ({ id: s.id, label: `Step ${i + 1}` }))}
           initialMedia={recipe.media}
+          initialVisibility={recipe.visibility}
         />
       </div>
     </div>

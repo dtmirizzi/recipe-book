@@ -17,10 +17,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <nav className="hidden sm:flex items-center gap-1">
             <NavLink href="/library">Library</NavLink>
             <NavLink href="/cook">Cook</NavLink>
+            <NavLink href="/discover">Discover</NavLink>
+            <NavLink href="/roundtables">Roundtables</NavLink>
+            <NavLink href="/starred">Starred</NavLink>
             <NavLink href="/pantry">Pantry</NavLink>
             <NavLink href="/capture" emphasize>
               + Capture
             </NavLink>
+            <NavLink href="/settings">Settings</NavLink>
             <form
               action={async () => {
                 'use server';
