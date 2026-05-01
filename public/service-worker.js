@@ -1,61 +1,32 @@
-/* Recipe Box service worker — minimal app-shell + recipe cache */
-const VERSION = 'rb-v1';
-const SHELL_CACHE = `shell-${VERSION}`;
-const RECIPE_CACHE = `recipes-${VERSION}`;
-const SHELL_URLS = ['/library', '/manifest.json'];
+/* Recipe Box service worker — minimal.
+ *
+ * Earlier versions cached navigation responses (e.g. /library) and could
+ * serve stale redirect responses, breaking the browser's "redirect: manual"
+ * mode for navigation requests. We've removed all fetch interception until
+ * we're ready to ship a proper offline-shell strategy that handles
+ * authenticated routes correctly.
+ *
+ * The SW still serves the PWA install capability (manifest + icons live
+ * elsewhere; this file just needs to register successfully).
+ */
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(SHELL_CACHE).then((c) => c.addAll(SHELL_URLS).catch(() => undefined)),
-  );
+const VERSION = 'rb-v2';
+
+self.addEventListener('install', () => {
+  // Activate the new SW immediately, replacing any older version.
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((k) => {
-          if (!k.endsWith(VERSION)) return caches.delete(k);
-          return undefined;
-        }),
-      ),
-    ),
+    (async () => {
+      // Clear any caches left over from previous SW versions.
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+      await self.clients.claim();
+    })(),
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-
-  const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-
-  // Don't intercept Next.js dev assets, RSC payloads, or auth
-  if (url.pathname.startsWith('/_next/') || url.pathname.startsWith('/api/')) return;
-
-  // Recipe detail pages — stale-while-revalidate
-  if (url.pathname.startsWith('/recipes/')) {
-    event.respondWith(
-      caches.open(RECIPE_CACHE).then(async (cache) => {
-        const cached = await cache.match(req);
-        const networkPromise = fetch(req)
-          .then((res) => {
-            if (res && res.status === 200) cache.put(req, res.clone());
-            return res;
-          })
-          .catch(() => cached);
-        return cached || networkPromise;
-      }),
-    );
-    return;
-  }
-
-  // App shell — cache-first
-  if (SHELL_URLS.includes(url.pathname)) {
-    event.respondWith(
-      caches.match(req).then((c) => c || fetch(req).catch(() => caches.match('/library'))),
-    );
-  }
-});
+// Intentionally no `fetch` listener — every request goes to the network
+// directly, just like there's no service worker at all.
