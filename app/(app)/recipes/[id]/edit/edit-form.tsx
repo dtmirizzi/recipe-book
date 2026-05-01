@@ -3,11 +3,27 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { RecipeDraft } from '@/lib/validation/schemas';
+import type { RecipeMedia } from '@/db/schema';
+import { MediaEditor } from './media-editor';
 
 const MEAL_TYPES = [null, 'breakfast', 'lunch', 'dinner', 'snack', 'dessert', 'side', 'sauce'] as const;
 const COMMON_TAGS = ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free', 'quick'];
 
-export function EditForm({ id, draft }: { id: string; draft: RecipeDraft }) {
+export type StepRef = { id: string; label: string };
+
+export function EditForm({
+  id,
+  draft,
+  coverImageUrl,
+  stepRefs,
+  initialMedia,
+}: {
+  id: string;
+  draft: RecipeDraft;
+  coverImageUrl: string | null;
+  stepRefs: StepRef[];
+  initialMedia: RecipeMedia[];
+}) {
   const [d, setD] = useState<RecipeDraft>(draft);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +56,13 @@ export function EditForm({ id, draft }: { id: string; draft: RecipeDraft }) {
 
   return (
     <form onSubmit={onSave} className="flex flex-col gap-6">
+      <MediaEditor
+        recipeId={id}
+        initialCover={coverImageUrl}
+        initialMedia={initialMedia}
+        stepRefs={stepRefs}
+      />
+
       <div className="card flex flex-col gap-4">
         <Field label="Title">
           <input

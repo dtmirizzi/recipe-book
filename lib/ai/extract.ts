@@ -113,24 +113,40 @@ async function callLLMVision(blobUrl: string): Promise<RecipeDraft> {
   return recipeDraftSchema.parse({ ...json, sourcePhotoUrl: blobUrl });
 }
 
-const SYSTEM_PROMPT = `You are a recipe-extraction service. Given content (text or image) that contains a recipe, return a single JSON object with this shape:
+const SYSTEM_PROMPT = `You are a culinary recipe-extraction service. The input is ALWAYS a cooking recipe (text, web page, or photo of a recipe card / cookbook page / handwritten note). Your job is to parse it into structured form so a home cook can scale, shop, and follow the steps.
+
+Treat every input as a recipe. If text looks ambiguous, lean toward recipe interpretation: lines with quantities + food words are ingredients; numbered or imperative-verb sentences ("Heat", "Add", "Stir") are steps; the most prominent line at the top is usually the title.
+
+Return a single JSON object with this shape:
 {
-  "title": string,
-  "description": string | null,
-  "baseServings": number,            // default 4 if unknown
-  "prepMinutes": number | null,
-  "cookMinutes": number | null,
-  "cuisine": string | null,
+  "title": string,                     // the recipe's name
+  "description": string | null,        // 1-2 sentence summary if present (or null)
+  "baseServings": number,              // servings/yield. Default 4 if unknown.
+  "prepMinutes": number | null,        // active prep time
+  "cookMinutes": number | null,        // cooking/baking time
+  "cuisine": string | null,            // e.g. "Italian", "Mexican", "Thai"
   "mealType": "breakfast"|"lunch"|"dinner"|"snack"|"dessert"|"side"|"sauce"|null,
-  "dietaryTags": string[],            // e.g. ["vegetarian","gluten-free"]
+  "dietaryTags": string[],             // e.g. ["vegetarian","gluten-free","dairy-free","vegan"]
   "ingredients": [{
-    "rawText": string, "name": string,
-    "quantity": number | null, "unit": string | null, "note": string | null,
-    "confidence": number              // 0..1, 1 if highly confident
+    "rawText": string,                 // the original line, verbatim — e.g. "2 tbsp extra-virgin olive oil"
+    "name": string,                    // the food item only — e.g. "extra-virgin olive oil"
+    "quantity": number | null,         // numeric amount. Convert fractions: "1/2"→0.5, "1 1/4"→1.25, "a pinch"→null
+    "unit": string | null,             // standardized unit: tsp, tbsp, cup, oz, lb, g, kg, ml, l, clove, can, pinch, etc. Null for whole-item counts ("2 eggs" → quantity:2, unit:null).
+    "note": string | null,             // preparation/qualifier — e.g. "diced", "to taste", "room temperature", "optional"
+    "confidence": number               // 0..1. Use < 0.6 when handwriting is unclear, quantity is ambiguous, or you guessed.
   }],
-  "steps": [{ "body": string }]
+  "steps": [{ "body": string }]        // each step as a separate object, in order. Strip leading numbering ("1. ", "Step 2:").
 }
-Return ONLY JSON, no commentary.`;
+
+Critical parsing rules for ingredients:
+- Keep quantity, unit, and name in their correct fields. NEVER put the number in "name".
+- Common abbreviations: t/tsp = teaspoon, T/Tbsp = tablespoon, c = cup, oz = ounce, lb = pound, g = gram, kg = kilogram, ml = milliliter, l = liter.
+- Ranges ("2-3 cloves") → use the lower bound for quantity and put the range in note.
+- "Salt and pepper to taste" → quantity:null, unit:null, note:"to taste".
+- "1 (14 oz) can diced tomatoes" → quantity:1, unit:"can", note:"14 oz, diced", name:"tomatoes".
+- Don't merge sub-ingredients across sections. If the recipe has "For the sauce:" and "For the topping:" headers, you may prepend the section to the note (e.g. note:"for the sauce") but keep each item separate.
+
+Return ONLY the JSON object, no commentary, no markdown fences.`;
 
 function stripCodeFence(s: string) {
   return s.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();

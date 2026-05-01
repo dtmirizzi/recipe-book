@@ -94,6 +94,8 @@ export const ingredientCategoryEnum = pgEnum('ingredient_category', [
 ]);
 
 export const captureKindEnum = pgEnum('capture_kind', ['url', 'photo', 'text']);
+export const mediaKindEnum = pgEnum('media_kind', ['image', 'video', 'embed']);
+export const mediaProviderEnum = pgEnum('media_provider', ['youtube', 'vimeo']);
 export const captureStatusEnum = pgEnum('capture_status', [
   'queued',
   'processing',
@@ -137,6 +139,7 @@ export const recipes = pgTable(
     sourceUrl: text('source_url'),
     sourcePhotoUrl: text('source_photo_url'),
     sourceText: text('source_text'),
+    coverImageUrl: text('cover_image_url'),
     // Embedding stored as numeric[]; on real Postgres+pgvector this can be a vector(1536).
     // We keep it as a JSON-encoded number array for portability with the local stack.
     embedding: jsonb('embedding').$type<number[] | null>(),
@@ -185,6 +188,34 @@ export const recipeSteps = pgTable(
   },
   (t) => ({
     recipeIdx: index('recipe_steps_recipe_idx').on(t.recipeId),
+  }),
+);
+
+export const recipeMedia = pgTable(
+  'recipe_media',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    recipeId: uuid('recipe_id')
+      .notNull()
+      .references(() => recipes.id, { onDelete: 'cascade' }),
+    stepId: uuid('step_id').references(() => recipeSteps.id, { onDelete: 'set null' }),
+    kind: mediaKindEnum('kind').notNull(),
+    url: text('url').notNull(),
+    posterUrl: text('poster_url'),
+    caption: text('caption'),
+    ordinal: integer('ordinal').notNull().default(0),
+    mimeType: text('mime_type'),
+    sizeBytes: integer('size_bytes'),
+    width: integer('width'),
+    height: integer('height'),
+    durationSeconds: numeric('duration_seconds', { precision: 8, scale: 2 }),
+    provider: mediaProviderEnum('provider'),
+    embedId: text('embed_id'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    recipeIdx: index('recipe_media_recipe_idx').on(t.recipeId, t.ordinal),
+    stepIdx: index('recipe_media_step_idx').on(t.stepId),
   }),
 );
 
@@ -259,3 +290,5 @@ export type RecipeStep = typeof recipeSteps.$inferSelect;
 export type Ingredient = typeof ingredients.$inferSelect;
 export type PantryItem = typeof pantryItems.$inferSelect;
 export type CaptureJob = typeof captureJobs.$inferSelect;
+export type RecipeMedia = typeof recipeMedia.$inferSelect;
+export type RecipeMediaInsert = typeof recipeMedia.$inferInsert;

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/config';
-import { saveImage } from '@/lib/blob/upload';
+import { saveMedia } from '@/lib/blob/upload';
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -14,11 +14,16 @@ export async function POST(req: Request) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const contentType = (file.type || 'application/octet-stream').toLowerCase();
   try {
-    const { url } = await saveImage({ buffer, contentType });
+    const { url, kind } = await saveMedia({ buffer, contentType });
     // For local fallback URLs, prefix with origin so they validate as URLs in callers.
     const origin = new URL(req.url).origin;
     const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
-    return NextResponse.json({ url: absoluteUrl });
+    return NextResponse.json({
+      url: absoluteUrl,
+      kind,
+      mimeType: contentType,
+      sizeBytes: buffer.byteLength,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Upload failed' },

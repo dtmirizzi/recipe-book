@@ -47,7 +47,13 @@ export default async function EditRecipePage({
       </Link>
       <h1 className="t-h1 mt-3">Edit.</h1>
       <div className="mt-6">
-        <EditForm id={recipe.id} draft={draft} />
+        <EditForm
+          id={recipe.id}
+          draft={draft}
+          coverImageUrl={recipe.coverImageUrl}
+          stepRefs={recipe.steps.map((s, i) => ({ id: s.id, label: `Step ${i + 1}` }))}
+          initialMedia={recipe.media}
+        />
       </div>
     </div>
   );

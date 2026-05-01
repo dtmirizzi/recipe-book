@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, desc, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
-import { recipes, recipeIngredients, recipeSteps } from '@/db/schema';
+import { recipes, recipeIngredients, recipeSteps, recipeMedia } from '@/db/schema';
 import type { Recipe } from '@/db/schema';
 
 export type LibraryFilters = {
@@ -75,7 +75,7 @@ export async function getRecipe(userId: string, id: string) {
     where: and(eq(recipes.id, id), eq(recipes.userId, userId), isNull(recipes.deletedAt)),
   });
   if (!recipe) return null;
-  const [ings, steps] = await Promise.all([
+  const [ings, steps, media] = await Promise.all([
     db
       .select()
       .from(recipeIngredients)
@@ -86,8 +86,13 @@ export async function getRecipe(userId: string, id: string) {
       .from(recipeSteps)
       .where(eq(recipeSteps.recipeId, id))
       .orderBy(recipeSteps.ordinal),
+    db
+      .select()
+      .from(recipeMedia)
+      .where(eq(recipeMedia.recipeId, id))
+      .orderBy(recipeMedia.ordinal),
   ]);
-  return { ...recipe, ingredients: ings, steps };
+  return { ...recipe, ingredients: ings, steps, media };
 }
 
 export type RecipeDraftInput = {
@@ -206,15 +211,30 @@ export async function updateRecipe(userId: string, id: string, draft: RecipeDraf
       );
     }
 
-    await tx.delete(recipeSteps).where(eq(recipeSteps.recipeId, id));
-    if (draft.steps.length) {
-      await tx.insert(recipeSteps).values(
-        draft.steps.map((s, idx) => ({
-          recipeId: id,
-          ordinal: idx,
-          body: s.body,
-        })),
-      );
+    // Preserve step IDs by ordinal so media attached to a step survives edits.
+    // Update existing rows in place where possible; insert new; delete extras.
+    const existingStepRows = await tx
+      .select({ id: recipeSteps.id, ordinal: recipeSteps.ordinal })
+      .from(recipeSteps)
+      .where(eq(recipeSteps.recipeId, id))
+      .orderBy(recipeSteps.ordinal);
+    const existingByOrdinal = new Map(existingStepRows.map((r) => [r.ordinal, r.id]));
+
+    for (let idx = 0; idx < draft.steps.length; idx++) {
+      const stepBody = draft.steps[idx].body;
+      const existingId = existingByOrdinal.get(idx);
+      if (existingId) {
+        await tx
+          .update(recipeSteps)
+          .set({ body: stepBody })
+          .where(eq(recipeSteps.id, existingId));
+        existingByOrdinal.delete(idx);
+      } else {
+        await tx.insert(recipeSteps).values({ recipeId: id, ordinal: idx, body: stepBody });
+      }
+    }
+    for (const leftoverId of existingByOrdinal.values()) {
+      await tx.delete(recipeSteps).where(eq(recipeSteps.id, leftoverId));
     }
   });
 }

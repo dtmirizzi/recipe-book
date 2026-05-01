@@ -2,15 +2,26 @@
 
 import { useState } from 'react';
 import { formatQuantity, scaleQuantity } from '@/lib/parsing/scaling';
-import type { Recipe, RecipeIngredient, RecipeStep } from '@/db/schema';
+import type { Recipe, RecipeIngredient, RecipeStep, RecipeMedia } from '@/db/schema';
 
 type FullRecipe = Recipe & {
   ingredients: RecipeIngredient[];
   steps: RecipeStep[];
+  media: RecipeMedia[];
 };
 
 export function RecipeDetailClient({ recipe }: { recipe: FullRecipe }) {
   const [target, setTarget] = useState(recipe.baseServings);
+  const mediaByStep = new Map<string, RecipeMedia[]>();
+  const orphanMedia: RecipeMedia[] = [];
+  for (const m of recipe.media) {
+    if (m.stepId) {
+      if (!mediaByStep.has(m.stepId)) mediaByStep.set(m.stepId, []);
+      mediaByStep.get(m.stepId)!.push(m);
+    } else {
+      orphanMedia.push(m);
+    }
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,_1fr)_minmax(0,_1.4fr)] gap-8 mt-8">
@@ -57,32 +68,101 @@ export function RecipeDetailClient({ recipe }: { recipe: FullRecipe }) {
       <section>
         <h2 className="t-h2 mb-4">Steps</h2>
         <ol className="flex flex-col gap-5">
-          {recipe.steps.map((step, i) => (
-            <li key={step.id} className="flex gap-4">
-              <div
-                className="flex items-center justify-center mt-1 flex-shrink-0"
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  background: 'var(--tomato-50)',
-                  color: 'var(--tomato-700)',
-                  fontFamily: 'var(--font-serif)',
-                  fontWeight: 600,
-                  fontSize: 16,
-                }}
-                aria-hidden
-              >
-                {i + 1}
-              </div>
-              <p className="t-body" style={{ flex: 1 }}>
-                {step.body}
-              </p>
-            </li>
-          ))}
+          {recipe.steps.map((step, i) => {
+            const stepMedia = mediaByStep.get(step.id) ?? [];
+            return (
+              <li key={step.id} className="flex gap-4">
+                <div
+                  className="flex items-center justify-center mt-1 flex-shrink-0"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    background: 'var(--tomato-50)',
+                    color: 'var(--tomato-700)',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 600,
+                    fontSize: 16,
+                  }}
+                  aria-hidden
+                >
+                  {i + 1}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p className="t-body">{step.body}</p>
+                  {stepMedia.length > 0 ? (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {stepMedia.map((m) => (
+                        <MediaTile key={m.id} media={m} />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
         </ol>
+
+        {orphanMedia.length > 0 ? (
+          <div className="mt-10">
+            <h2 className="t-h2 mb-4">Photos & videos</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {orphanMedia.map((m) => (
+                <MediaTile key={m.id} media={m} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
     </div>
+  );
+}
+
+function MediaTile({ media }: { media: RecipeMedia }) {
+  const radius = 12;
+  if (media.kind === 'image') {
+    return (
+      <figure className="flex flex-col gap-1">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={media.url}
+          alt={media.caption ?? ''}
+          loading="lazy"
+          style={{ width: '100%', borderRadius: radius, display: 'block' }}
+        />
+        {media.caption ? <figcaption className="t-meta">{media.caption}</figcaption> : null}
+      </figure>
+    );
+  }
+  if (media.kind === 'video') {
+    return (
+      <figure className="flex flex-col gap-1">
+        <video
+          src={media.url}
+          poster={media.posterUrl ?? undefined}
+          controls
+          playsInline
+          preload="metadata"
+          style={{ width: '100%', borderRadius: radius, display: 'block', background: '#000' }}
+        />
+        {media.caption ? <figcaption className="t-meta">{media.caption}</figcaption> : null}
+      </figure>
+    );
+  }
+  // embed
+  return (
+    <figure className="flex flex-col gap-1">
+      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: radius, overflow: 'hidden' }}>
+        <iframe
+          src={media.url}
+          title={media.caption ?? 'Embedded video'}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+        />
+      </div>
+      {media.caption ? <figcaption className="t-meta">{media.caption}</figcaption> : null}
+    </figure>
   );
 }
 

@@ -23,6 +23,22 @@ export default async function RecipeDetailPage({
         ← Library
       </Link>
 
+      {recipe.coverImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={recipe.coverImageUrl}
+          alt={recipe.title}
+          className="mt-4"
+          style={{
+            width: '100%',
+            maxHeight: 420,
+            objectFit: 'cover',
+            borderRadius: 16,
+            display: 'block',
+          }}
+        />
+      ) : null}
+
       <header className="mt-3">
         <div className="flex flex-wrap gap-2 items-center mb-2">
           {recipe.cuisine ? (
