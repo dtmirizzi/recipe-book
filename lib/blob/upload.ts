@@ -32,7 +32,17 @@ export async function saveImage(input: UploadInput): Promise<{ url: string }> {
     return { url: result.url };
   }
 
-  // Local filesystem fallback — writes to ./public/uploads
+  // Production has a read-only filesystem on Vercel (only /tmp is writable,
+  // and that's per-invocation). Fail loudly if we're in prod without Blob —
+  // surfacing as ENOENT/EROFS otherwise, which is opaque.
+  if (flags.isProd) {
+    throw new Error(
+      'BLOB_READ_WRITE_TOKEN is not set. Provision Vercel Blob at ' +
+        'https://vercel.com/<account>/<project>/stores and redeploy.',
+    );
+  }
+
+  // Local dev fallback — writes to ./public/uploads (gitignored).
   const ext = pickExtension(input.contentType);
   const filename = `${randomUUID()}.${ext}`;
   const dir = path.join(process.cwd(), 'public', 'uploads');
