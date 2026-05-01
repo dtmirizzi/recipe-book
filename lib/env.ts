@@ -9,8 +9,11 @@ const schema = z.object({
   EMAIL_FROM: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),
   OPENROUTER_BASE_URL: z.string().url().default('https://openrouter.ai/api/v1'),
-  OPENROUTER_MODEL_TEXT: z.string().default('anthropic/claude-haiku-4.5'),
-  OPENROUTER_MODEL_VISION: z.string().default('anthropic/claude-sonnet-4.5'),
+  // Defaults: Gemini 2.5 Flash for both. Multimodal, supports JSON mode,
+  // ~15× cheaper than Claude Sonnet 4.5. Override per call site if you
+  // need stronger handwriting / hard-photo extraction.
+  OPENROUTER_MODEL_TEXT: z.string().default('google/gemini-2.5-flash'),
+  OPENROUTER_MODEL_VISION: z.string().default('google/gemini-2.5-flash'),
   OPENROUTER_APP_NAME: z.string().default('Recipe Box'),
   OPENROUTER_APP_URL: z.string().url().optional(),
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
