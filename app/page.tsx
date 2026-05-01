@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
+import { HeroVideo } from '@/components/HeroVideo';
 import { getCurrentUser } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 
@@ -9,7 +10,7 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="topbar">
+      <header className="topbar topbar--over-video">
         <div className="container-rb inner">
           <Logo size={32} />
           <nav className="flex items-center gap-3">
@@ -21,26 +22,29 @@ export default async function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="container-rb pt-12 sm:pt-20 pb-16 max-w-3xl">
-          <div className="t-eyebrow mb-3" style={{ color: 'var(--tomato-700)' }}>
-            v1 · personal recipe box
-          </div>
-          <h1 className="t-display">Tonight, something warm.</h1>
-          <p className="t-body soft mt-4 max-w-xl">
-            Save recipes from anywhere — a URL, a photo of a card, a screenshot, a paste. When
-            5pm rolls around, ask what you can make with what's actually in the kitchen.
-          </p>
-          <div className="mt-8 flex gap-3">
-            <Link href="/sign-in" className="btn btn-primary">
-              Start your box
-            </Link>
-            <Link href="/sign-in" className="btn">
-              I already have one
-            </Link>
+        <section className="hero">
+          <HeroVideo />
+          <div className="hero-content container-rb pt-12 sm:pt-20 pb-20 max-w-3xl">
+            <div className="t-eyebrow mb-3" style={{ color: 'var(--tomato-700)' }}>
+              v1 · personal recipe box
+            </div>
+            <h1 className="t-display">Tonight, something warm.</h1>
+            <p className="t-body soft mt-4 max-w-xl">
+              Save recipes from anywhere — a URL, a photo of a card, a screenshot, a paste. When
+              5pm rolls around, ask what you can make with what's actually in the kitchen.
+            </p>
+            <div className="mt-8 flex gap-3">
+              <Link href="/sign-in" className="btn btn-primary">
+                Start your box
+              </Link>
+              <Link href="/sign-in" className="btn">
+                I already have one
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section className="container-rb pb-20 grid sm:grid-cols-3 gap-4 max-w-5xl">
+        <section className="container-rb py-12 sm:py-16 grid sm:grid-cols-3 gap-4 max-w-5xl">
           <FeatureCard
             eyebrow="01 · Capture"
             title="Save anything."

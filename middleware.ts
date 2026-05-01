@@ -9,6 +9,7 @@ const PUBLIC_PREFIXES = [
   '/api/auth',
   '/_next',
   '/icons',
+  '/videos',
   '/uploads',
   '/manifest.json',
   '/service-worker.js',

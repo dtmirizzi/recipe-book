@@ -189,6 +189,82 @@
   }
   .logo-mark .word b { font-weight: 600; }
 
+  /* ── Hero with background video ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero-video-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* CSS does the heavy lift — heavy blur + slight desat. The source
+       video is only lightly graded so we can tune this freely. */
+    filter: blur(14px) saturate(0.85) contrast(1.04);
+    /* Scale up slightly so the blurred edges don't show. */
+    transform: scale(1.08);
+    will-change: filter, transform;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      /* Warm tomato vignette pulling toward the center */
+      radial-gradient(
+        ellipse at 50% 40%,
+        oklch(0.62 0.18 30 / 0.0) 0%,
+        oklch(0.62 0.18 30 / 0.10) 55%,
+        oklch(0.32 0.10 30 / 0.30) 100%
+      ),
+      /* Top→bottom paper-warm wash so text + buttons stay legible
+         and the section transitions cleanly into the feature cards */
+      linear-gradient(
+        to bottom,
+        rgba(247, 244, 237, 0.55) 0%,
+        rgba(247, 244, 237, 0.40) 35%,
+        rgba(247, 244, 237, 0.65) 70%,
+        var(--paper-warm) 100%
+      );
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* When motion is reduced, hide the video and let the poster show through.
+     The HeroVideo component still renders the <video> element with a poster
+     attribute, which is what shows when autoplay doesn't fire. */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-video {
+      display: none;
+    }
+    .hero-video-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('/videos/landing-hero-poster.jpg') center/cover no-repeat;
+      filter: blur(14px) saturate(0.85);
+      transform: scale(1.08);
+    }
+  }
+
+  /* When the topbar sits over the hero video on the landing page,
+     drop the bottom border so it blends into the video. */
+  .topbar--over-video {
+    border-bottom: 0;
+    background: linear-gradient(to bottom, rgba(253, 252, 249, 0.85), rgba(253, 252, 249, 0.0));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
   /* ── Top bar ── */
   .topbar {
     position: sticky; top: 0;

@@ -43,6 +43,14 @@ Thumbs.db
 # local uploads (dev blob fallback)
 public/uploads/
 
+# Pexels video candidates — raw clips are bulk binary (re-fetchable via
+# the manifest if needed). The curated output ships in /public/videos/.
+design/video-candidates/*.mp4
+design/video-candidates/thumbs/
+design/video-candidates-2/*.mp4
+design/video-candidates-2/thumbs-raw/
+design/video-candidates-2/thumbs-styled/
+
 # db data
 postgres-data/
 tsconfig.tsbuildinfo
