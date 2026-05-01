@@ -170,12 +170,23 @@ function RecipeCard({ r }: { r: RecipeListItem }) {
       style={{ padding: 'var(--s-4)' }}
     >
       <div className="flex gap-3">
-        <div
-          className="rounded-md flex-shrink-0 flex items-center justify-center"
-          style={{ width: 64, height: 64, background: 'var(--paper-soft)', color: 'var(--ink-muted)' }}
-        >
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 26 }}>{r.title[0]?.toUpperCase() ?? '?'}</span>
-        </div>
+        {r.coverImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={r.coverImageUrl}
+            alt=""
+            loading="lazy"
+            className="rounded-md flex-shrink-0"
+            style={{ width: 64, height: 64, objectFit: 'cover', display: 'block' }}
+          />
+        ) : (
+          <div
+            className="rounded-md flex-shrink-0 flex items-center justify-center"
+            style={{ width: 64, height: 64, background: 'var(--paper-soft)', color: 'var(--ink-muted)' }}
+          >
+            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 26 }}>{r.title[0]?.toUpperCase() ?? '?'}</span>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, lineHeight: 1.2 }}>
             {r.title}
