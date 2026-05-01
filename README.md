@@ -51,7 +51,7 @@ Everything works locally without any external API keys. Add these to `.env.local
 
 | Var | What it enables |
 |---|---|
-| `ANTHROPIC_API_KEY` | Real Claude calls for recipe extraction (URL/photo/text) and smart-search query parsing. Default uses a deterministic mock extractor. |
+| `OPENROUTER_API_KEY` | Real LLM calls via OpenRouter for recipe extraction (URL/photo/text) and smart-search query parsing. Defaults to `anthropic/claude-haiku-4.5` for text and `anthropic/claude-sonnet-4.5` for vision; override via `OPENROUTER_MODEL_TEXT` / `OPENROUTER_MODEL_VISION` (any OpenRouter model id works). The API key is read only by `lib/ai/openrouter.ts` (server-only); `lib/env.ts` is also marked `server-only` so the value can never end up in the client bundle. |
 | `RESEND_API_KEY` + `EMAIL_FROM` | Magic-link sign-in email. Default uses a dev credentials provider that lets you sign in with any email locally. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob for recipe photo storage. Default writes to `./public/uploads/` on the local filesystem. |
 
@@ -92,7 +92,7 @@ One service: **Vercel** for everything in production.
 - **Postgres** with `pgvector` (Vercel Postgres / Neon in production; Docker pgvector image locally)
 - **Drizzle ORM** — schema lives in `db/schema.ts`, migrations under `db/migrations/`
 - **Vercel Blob** for recipe photos (filesystem fallback locally)
-- **Anthropic Claude** via Vercel AI Gateway in production; deterministic mock extractor when `ANTHROPIC_API_KEY` is unset
+- **OpenRouter** (any provider — defaults to Claude Haiku 4.5 for text, Sonnet 4.5 for vision) via the OpenAI SDK with a custom baseURL; deterministic mock extractor when `OPENROUTER_API_KEY` is unset
 - **Hand-rolled PWA** — `public/manifest.json` + `public/service-worker.js`; the SW only activates in production builds
 
 The `lib/` directory is no-JSX domain logic (db queries, AI extraction, parsing, scoring). UI lives in `app/` and `components/`. API surface is in `app/api/.../route.ts` so a future Capacitor mobile shell can call the same endpoints over HTTP.

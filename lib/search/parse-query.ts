@@ -1,5 +1,6 @@
 import 'server-only';
 import { flags } from '@/lib/env';
+import { getOpenRouter, models } from '@/lib/ai/openrouter';
 
 export type ParsedQuery = {
   mood?: string;
@@ -15,16 +16,15 @@ export type ParsedQuery = {
  * Parse a free-form query like "quick weeknight vegetarian dinner using chicken
  * and the lemons that are about to go bad" into structured constraints.
  *
- * Local heuristic version (no LLM); the production code path would call Claude
- * Haiku with structured output. The local version handles the common patterns
- * the design transcripts called out.
+ * Local heuristic version (no LLM) handles common patterns; production uses
+ * an LLM via OpenRouter for everything else.
  */
 export async function parseQuery(query: string, opts?: { knownIngredients?: string[] }): Promise<ParsedQuery> {
-  if (flags.hasAnthropicKey) {
+  if (flags.hasOpenrouterKey) {
     try {
-      return await parseWithClaude(query, opts);
+      return await parseWithLLM(query, opts);
     } catch (err) {
-      console.warn('Claude query parse failed, falling back to heuristic', err);
+      console.warn('LLM query parse failed, falling back to heuristic', err);
     }
   }
   return heuristicParse(query, opts);
@@ -82,13 +82,13 @@ function heuristicParse(query: string, opts?: { knownIngredients?: string[] }): 
     out.prioritizeExpiring = true;
   }
 
-  // Must-use ingredients — match against known catalog if provided
+  // Must-use ingredients — match against known catalog
   const known = (opts?.knownIngredients ?? []).map((s) => s.toLowerCase());
   for (const name of known) {
     if (q.includes(name)) out.mustUseIngredients.push(name);
   }
 
-  // Also try simple "with X, Y, and Z" pattern
+  // "with X, Y, and Z" pattern
   const withMatch = /\b(?:with|using)\s+([a-zA-Z, ]+?)(?:\.|$|\?)/.exec(q);
   if (withMatch) {
     const parts = withMatch[1]
@@ -105,22 +105,25 @@ function heuristicParse(query: string, opts?: { knownIngredients?: string[] }): 
   return out;
 }
 
-async function parseWithClaude(query: string, _opts?: { knownIngredients?: string[] }): Promise<ParsedQuery> {
-  const { default: Anthropic } = await import('@anthropic-ai/sdk').catch(() => ({ default: null as never }));
-  if (!Anthropic) throw new Error('SDK not installed');
-  const client = new Anthropic();
-  const msg = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 600,
-    system: `Convert a home-cooking query into JSON with these fields (no commentary):
+async function parseWithLLM(query: string, _opts?: { knownIngredients?: string[] }): Promise<ParsedQuery> {
+  const client = getOpenRouter();
+  const completion = await client.chat.completions.create({
+    model: models.text(),
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: 'system',
+        content: `Convert a home-cooking query into JSON with these fields (no commentary):
 { "mood"?, "timeMaxMinutes"?, "dietaryRequired": string[], "dietaryAvoid": string[],
   "mustUseIngredients": string[], "prioritizeExpiring": boolean }
 Use lowercase, simple words. timeMaxMinutes only if implied.`,
-    messages: [{ role: 'user', content: query }],
+      },
+      { role: 'user', content: query },
+    ],
   });
-  const block = msg.content.find((c) => c.type === 'text');
-  if (!block || block.type !== 'text') throw new Error('No text');
-  const json = JSON.parse(block.text.replace(/^```json\s*/i, '').replace(/```$/i, '').trim());
+  const body = completion.choices[0]?.message?.content;
+  if (!body) throw new Error('Empty LLM response');
+  const json = JSON.parse(body.replace(/^```json\s*/i, '').replace(/```$/i, '').trim());
   return {
     mood: json.mood,
     timeMaxMinutes: json.timeMaxMinutes,
