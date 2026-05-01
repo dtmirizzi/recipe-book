@@ -1,0 +1,78 @@
+{
+  "produce": [
+    "apple", "banana", "lemon", "lime", "orange", "grapefruit", "strawberry", "blueberry", "raspberry", "blackberry", "grape", "pear", "peach", "plum", "watermelon", "cantaloupe", "pineapple", "mango", "avocado",
+    "tomato", "cherry tomato", "onion", "red onion", "shallot", "garlic", "ginger", "scallion", "leek",
+    "carrot", "celery", "bell pepper", "jalapeño", "serrano pepper", "potato", "sweet potato", "yam",
+    "lettuce", "romaine", "kale", "spinach", "arugula", "swiss chard", "collard greens",
+    "cucumber", "zucchini", "yellow squash", "butternut squash", "pumpkin", "eggplant",
+    "broccoli", "cauliflower", "brussels sprouts", "cabbage", "bok choy", "asparagus", "green beans", "snap peas", "snow peas", "peas", "corn",
+    "mushroom", "shiitake", "portobello",
+    "basil", "parsley", "cilantro", "mint", "rosemary", "thyme", "sage", "dill", "chives", "oregano"
+  ],
+  "protein": [
+    "chicken breast", "chicken thigh", "ground chicken", "whole chicken",
+    "ground beef", "steak", "ribeye", "sirloin", "brisket", "short ribs", "stew meat",
+    "pork chop", "pork shoulder", "ground pork", "bacon", "ham", "prosciutto", "sausage",
+    "lamb chop", "ground lamb",
+    "salmon", "tuna", "cod", "halibut", "tilapia", "shrimp", "scallops", "crab", "mussels", "clams",
+    "egg", "tofu", "tempeh", "seitan", "edamame",
+    "black beans", "kidney beans", "pinto beans", "chickpeas", "white beans", "lentils", "split peas"
+  ],
+  "grain": [
+    "rice", "white rice", "brown rice", "jasmine rice", "basmati rice", "wild rice", "arborio rice",
+    "pasta", "spaghetti", "penne", "rigatoni", "linguine", "fusilli", "macaroni", "egg noodles", "rice noodles", "soba", "udon", "ramen",
+    "bread", "white bread", "whole wheat bread", "sourdough", "baguette", "pita", "tortilla", "flour tortilla", "corn tortilla", "naan",
+    "oats", "rolled oats", "steel cut oats", "oatmeal",
+    "quinoa", "couscous", "barley", "farro", "bulgur", "polenta", "grits", "cornmeal",
+    "flour", "all-purpose flour", "bread flour", "whole wheat flour", "rye flour", "almond flour"
+  ],
+  "dairy": [
+    "milk", "whole milk", "2% milk", "skim milk", "buttermilk", "heavy cream", "half and half",
+    "yogurt", "greek yogurt", "sour cream", "cream cheese", "cottage cheese", "ricotta",
+    "butter", "salted butter", "unsalted butter",
+    "cheese", "cheddar", "mozzarella", "parmesan", "feta", "goat cheese", "gruyere", "swiss cheese", "blue cheese", "brie",
+    "ice cream",
+    "almond milk", "oat milk", "soy milk", "coconut milk"
+  ],
+  "pantry": [
+    "olive oil", "extra virgin olive oil", "vegetable oil", "canola oil", "sesame oil", "coconut oil", "peanut oil",
+    "vinegar", "balsamic vinegar", "red wine vinegar", "white wine vinegar", "apple cider vinegar", "rice vinegar", "sherry vinegar",
+    "salt", "kosher salt", "sea salt", "pepper", "black pepper",
+    "sugar", "white sugar", "brown sugar", "powdered sugar", "honey", "maple syrup",
+    "stock", "chicken stock", "beef stock", "vegetable stock", "broth",
+    "canned tomatoes", "tomato paste", "tomato sauce", "passata", "marinara",
+    "canned coconut milk", "canned beans", "canned tuna",
+    "peanut butter", "almond butter", "tahini",
+    "baking powder", "baking soda", "yeast", "vanilla extract", "almond extract",
+    "raisins", "dates", "dried cranberries", "dried apricots",
+    "walnuts", "pecans", "almonds", "cashews", "pistachios", "pine nuts", "hazelnuts", "peanuts",
+    "sesame seeds", "sunflower seeds", "pumpkin seeds", "chia seeds", "flax seeds",
+    "panko", "breadcrumbs", "cornstarch"
+  ],
+  "spice": [
+    "cumin", "paprika", "smoked paprika", "chili powder", "cayenne", "red pepper flakes",
+    "coriander", "turmeric", "cinnamon", "nutmeg", "cardamom", "cloves", "ginger powder",
+    "garlic powder", "onion powder", "italian seasoning", "herbs de provence",
+    "bay leaves", "fennel seeds", "mustard seeds", "black mustard seeds",
+    "saffron", "star anise", "white pepper",
+    "everything bagel seasoning"
+  ],
+  "condiment": [
+    "soy sauce", "tamari", "fish sauce", "oyster sauce", "hoisin sauce",
+    "worcestershire sauce", "hot sauce", "sriracha", "tabasco", "chili crisp", "harissa",
+    "ketchup", "mustard", "dijon mustard", "whole grain mustard", "mayonnaise", "ranch", "bbq sauce", "salsa",
+    "pesto", "tapenade",
+    "miso", "white miso", "red miso",
+    "pickles", "capers", "olives", "kalamata olives", "green olives"
+  ],
+  "beverage": [
+    "water", "sparkling water",
+    "coffee", "espresso", "tea", "green tea", "black tea",
+    "white wine", "red wine", "dry white wine", "sake", "mirin", "shaoxing wine",
+    "beer", "stout",
+    "orange juice", "apple juice", "lemonade"
+  ],
+  "other": [
+    "lemon zest", "orange zest", "lime zest"
+  ]
+}

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Recipe Box · Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="design-system.css" />
+<style>
+  /* Page-specific layout for the design system doc */
+  body { background: var(--paper-warm); }
+  main { padding: var(--s-12) 0 var(--s-20); }
+  section + section { margin-top: var(--s-16); }
+  .section-head { margin-bottom: var(--s-6); }
+  .section-head .t-eyebrow { color: var(--tomato-700); }
+
+  /* Top hero */
+  .ds-hero {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: var(--s-12) 0 var(--s-10);
+  }
+  .ds-hero h1 { margin: 0 0 var(--s-3); }
+  .ds-hero p  { margin: 0; max-width: 560px; }
+
+  /* Logo lockups grid */
+  .logo-stage {
+    display: flex; align-items: center; justify-content: center;
+    height: 160px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    position: relative;
+    overflow: hidden;
+  }
+  .logo-stage.dark  { background: var(--ink); }
+  .logo-stage.tomato { background: var(--tomato-500); }
+  .logo-stage .label {
+    position: absolute; top: 12px; left: 14px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .logo-stage.dark .label,
+  .logo-stage.tomato .label { color: rgba(255,255,255,0.6); }
+
+  /* Logo SVG marks */
+  .logo-mark { display: inline-flex; align-items: center; gap: 12px; }
+  .logo-mark .glyph {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--tomato-500);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 26px; font-weight: 600;
+    line-height: 1;
+  }
+  .logo-mark .word {
+    font-family: var(--font-serif);
+    font-size: 28px; font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .logo-mark .word b { font-weight: 600; }
+  .logo-stage.dark   .word { color: var(--paper); }
+  .logo-stage.tomato .word { color: #fff; }
+  .logo-stage.tomato .glyph { background: #fff; color: var(--tomato-700); }
+  .logo-stage.dark   .glyph { background: var(--tomato-500); }
+
+  /* Color swatches */
+  .swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--s-3); }
+  .swatch {
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .swatch .chip-fill {
+    height: 96px;
+    display: flex; align-items: flex-end; padding: 10px;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .swatch.lt .chip-fill { color: var(--ink); }
+  .swatch .meta {
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .swatch .name { font-weight: 700; font-size: 13px; }
+  .swatch .hex { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); }
+
+  /* Type specimen */
+  .type-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: var(--s-6);
+    padding: var(--s-5) 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row .key { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); }
+  .type-row .key b { display: block; font-family: var(--font-sans); font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+
+  /* Component samples */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+  .comp-tile { padding: var(--s-6); }
+  .comp-tile .demo { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
+
+  /* Spacing/radius/shadow demo */
+  .scale-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--s-3); }
+  .scale-tile {
+    aspect-ratio: 1;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+  .scale-tile .box { background: var(--tomato-500); border-radius: 3px; }
+  .scale-tile .label { font-family: var(--font-mono); font-size: 10px; color: var(--ink-muted); }
+
+  .radius-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-4); }
+  .radius-tile {
+    aspect-ratio: 1.6;
+    background: var(--tomato-100);
+    border: 1px solid var(--tomato-300);
+    display: flex; align-items: flex-end; justify-content: flex-start;
+    padding: 12px;
+    color: var(--tomato-900);
+    font-family: var(--font-mono); font-size: 11px;
+  }
+
+  .shadow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); }
+  .shadow-tile {
+    aspect-ratio: 2;
+    background: var(--paper);
+    border-radius: var(--r-md);
+    display: flex; align-items: flex-end; padding: 14px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted);
+  }
+
+  /* Voice block */
+  .voice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-4);
+  }
+  .voice .pill {
+    padding: var(--s-5);
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .voice .pill h4 {
+    margin: 0 0 var(--s-2);
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    color: var(--tomato-700);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .voice ul { margin: 0; padding-left: 18px; color: var(--ink-soft); }
+  .voice li { margin-bottom: 4px; }
+
+  /* Topbar */
+  .topbar {
+    position: sticky; top: 0;
+    background: rgba(253, 252, 249, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    z-index: 5;
+  }
+  .topbar .container {
+    height: 56px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar nav { display: flex; gap: var(--s-5); font-size: 13px; color: var(--ink-muted); }
+  .topbar nav a { color: inherit; text-decoration: none; }
+  .topbar nav a:hover { color: var(--ink); }
+
+  /* === Print rules === */
+  @media print {
+    @page { size: A4 portrait; margin: 12mm; }
+    html, body {
+      background: var(--paper) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .topbar { display: none !important; }
+    main { padding: 0 !important; }
+    section { page-break-inside: auto; break-inside: auto; }
+    section + section {
+      margin-top: 0 !important;
+      padding-top: 18px;
+      page-break-before: page;
+      break-before: page;
+    }
+    .ds-hero { padding: 0 0 18px !important; border-bottom: 1px solid var(--line); }
+    .section-head { margin-bottom: 14px; }
+    .swatch, .scale-tile, .radius-tile, .shadow-tile, .card, .comp-tile, .pill, .logo-stage, .type-row {
+      page-break-inside: avoid; break-inside: avoid;
+    }
+    .grid, .swatch-grid, .scale-grid, .radius-grid, .shadow-grid, .comp-grid, .voice {
+      page-break-inside: avoid; break-inside: avoid;
+    }
+    .container { padding: 0 !important; max-width: none !important; }
+    .t-display { font-size: 44px !important; }
+    .t-h1 { font-size: 32px !important; }
+    /* Force light shadows to render */
+    .shadow-tile { border: 1px solid var(--line); }
+  }
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <div class="logo-mark">
+      <div class="glyph">R</div>
+      <div class="word"><b>Recipe</b>Box</div>
+    </div>
+    <nav>
+      <a href="#brand">Brand</a>
+      <a href="#color">Color</a>
+      <a href="#type">Type</a>
+      <a href="#scale">Scale</a>
+      <a href="#components">Components</a>
+      <a href="#voice">Voice</a>
+    </nav>
+  </div>
+</header>
+
+<div class="ds-hero">
+  <div class="container">
+    <div class="t-eyebrow" style="color: var(--tomato-700); margin-bottom: 10px;">v1.0 · Design Library</div>
+    <h1 class="t-display">A warm, well-organized recipe box.</h1>
+    <p class="t-body soft">The visual system for Recipe Box — minimal, restaurant-menu calm, with a single warm tomato accent. Built on Lato for clarity and Fraunces for the recipe-card moments.</p>
+  </div>
+</div>
+
+<main class="container">
+
+  <!-- BRAND -->
+  <section id="brand">
+    <div class="section-head">
+      <div class="t-eyebrow">01 · Brand</div>
+      <h2 class="t-h1" style="margin: 4px 0 0;">Logo & lockups</h2>
+      <p class="t-body muted" style="margin: 6px 0 0;">A single-letter glyph paired with a Fraunces wordmark. Use the full lockup wherever space allows; fall back to the glyph at small sizes.</p>
+    </div>
+    <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="logo-stage">
+        <span class="label">primary · light</span>
+        <div class="logo-mark">
+          <div class="glyph">R</div>
+          <div class="word"><b>Recipe</b>Box</div>
+        </div>
+      </div>
+      <div class="logo-stage dark">
+        <span class="label">on ink</span>
+        <div class="logo-mark">
+          <div class="glyph">R</div>
+          <div class="word"><b>Recipe</b>Box</div>
+        </div>
+      </div>
+      <div class="logo-stage tomato">
+        <span class="label">on tomato</span>
+        <div class="logo-mark">
+          <div class="glyph">R</div>
+          <div class="word"><b>Recipe</b>Box</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); margin-top: var(--s-4);">
+      <div class="logo-stage" style="height: 110px;">
+        <span class="label">glyph · 44</span>
+        <div class="glyph" style="width: 44px; height: 44px; border-radius: 10px; background: var(--tomato-500); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 26px; font-weight: 600;">R</div>
+      </div>
+      <div class="logo-stage" style="height: 110px;">
+        <span class="label">glyph · 32</span>
+        <div class="glyph" style="width: 32px; height: 32px; border-radius: 8px; background: var(--tomato-500); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 19px; font-weight: 600;">R</div>
+      </div>
+      <div class="logo-stage" style="height: 110px;">
+        <span class="label">glyph · 24</span>
+        <div class="glyph" style="width: 24px; height: 24px; border-radius: 6px; background: var(--tomato-500); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 15px; font-weight: 600;">R</div>
+      </div>
+      <div class="logo-stage" style="height: 110px;">
+        <span class="label">favicon · 16</span>
+        <div class="glyph" style="width: 16px; height: 16px; border-radius: 4px; background: var(--tomato-500); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 11px; font-weight: 600;">R</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLOR -->
+  <section id="color">
+    <div class="section-head">
+      <div class="t-eyebrow">02 · Color</div>
+      <h2 class="t-h1" style="margin: 4px 0 0;">Palette</h2>
+      <p class="t-body muted" style="margin: 6px 0 0;">Warm-toned neutrals form the canvas. A single tomato accent carries CTA and emphasis. Saffron is reserved for "fresh / now" moments (e.g. soon-to-expire pantry items).</p>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-6); margin-bottom: var(--s-3);">Brand · Tomato</div>
+    <div class="swatch-grid">
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--tomato-50);">#</div><div class="meta"><span class="name">Tomato 50</span><span class="hex">oklch(.96 .025 30)</span></div></div>
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--tomato-100);">#</div><div class="meta"><span class="name">Tomato 100</span><span class="hex">oklch(.92 .06 30)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--tomato-300);">#</div><div class="meta"><span class="name">Tomato 300</span><span class="hex">oklch(.78 .13 30)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--tomato-500);">PRIMARY</div><div class="meta"><span class="name">Tomato 500 ★</span><span class="hex">oklch(.62 .18 30)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--tomato-700);">#</div><div class="meta"><span class="name">Tomato 700</span><span class="hex">oklch(.48 .16 30)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--tomato-900);">#</div><div class="meta"><span class="name">Tomato 900</span><span class="hex">oklch(.32 .10 30)</span></div></div>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-6); margin-bottom: var(--s-3);">Secondary · Saffron</div>
+    <div class="swatch-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--saffron-100);">#</div><div class="meta"><span class="name">Saffron 100</span><span class="hex">oklch(.92 .06 82)</span></div></div>
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--saffron-500);">#</div><div class="meta"><span class="name">Saffron 500</span><span class="hex">oklch(.78 .14 82)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--saffron-700);">#</div><div class="meta"><span class="name">Saffron 700</span><span class="hex">oklch(.58 .12 82)</span></div></div>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-6); margin-bottom: var(--s-3);">Neutrals · Warm</div>
+    <div class="swatch-grid">
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--paper);">paper</div><div class="meta"><span class="name">Paper</span><span class="hex">#fdfcf9</span></div></div>
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--paper-warm);">warm</div><div class="meta"><span class="name">Paper Warm</span><span class="hex">#f7f4ed</span></div></div>
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--paper-soft);">soft</div><div class="meta"><span class="name">Paper Soft</span><span class="hex">#efeae0</span></div></div>
+      <div class="swatch lt"><div class="chip-fill" style="background: var(--line); color: var(--ink);">line</div><div class="meta"><span class="name">Line</span><span class="hex">#e7e2d5</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--ink-muted);">muted</div><div class="meta"><span class="name">Ink Muted</span><span class="hex">#8a857b</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--ink-soft);">soft</div><div class="meta"><span class="name">Ink Soft</span><span class="hex">#4a463f</span></div></div>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-6); margin-bottom: var(--s-3);">Functional</div>
+    <div class="swatch-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="swatch"><div class="chip-fill" style="background: var(--ok);">success</div><div class="meta"><span class="name">Success</span><span class="hex">oklch(.62 .13 145)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--warn);">warning</div><div class="meta"><span class="name">Warning</span><span class="hex">oklch(.72 .15 65)</span></div></div>
+      <div class="swatch"><div class="chip-fill" style="background: var(--err);">error</div><div class="meta"><span class="name">Error</span><span class="hex">oklch(.58 .20 25)</span></div></div>
+    </div>
+  </section>
+
+  <!-- TYPE -->
+  <section id="type">
+    <div class="section-head">
+      <div class="t-eyebrow">03 · Typography</div>
+      <h2 class="t-h1" style="margin: 4px 0 0;">Lato &amp; Fraunces</h2>
+      <p class="t-body muted" style="margin: 6px 0 0;">Lato is the workhorse — clean, friendly, neutral. Fraunces appears at display sizes and on recipe titles, where it lends warmth without dressing up.</p>
+    </div>
+
+    <div class="card">
+      <div class="type-row">
+        <div class="key"><b>Display</b>Fraunces · 56 / 1.05</div>
+        <div class="t-display">Tonight, something warm.</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>H1</b>Fraunces · 40 / 1.1</div>
+        <div class="t-h1">Lemon Chicken &amp; Spinach</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>H2</b>Lato 700 · 24 / 1.2</div>
+        <div class="t-h2">Ingredients</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>H3</b>Lato 700 · 18 / 1.3</div>
+        <div class="t-h3">For the dressing</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>Body</b>Lato 400 · 15 / 1.6</div>
+        <div class="t-body" style="max-width: 520px;">Whisk the lemon juice and olive oil with a pinch of salt. Pour over the warm spinach and toss gently — the leaves should wilt slightly but stay bright green.</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>Meta</b>Lato 400 · 13 · muted</div>
+        <div class="t-meta">30 minutes · 4 servings · added Tuesday</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>Eyebrow</b>Lato 700 · 11 caps · 0.12em</div>
+        <div class="t-eyebrow">Weeknight · Quick · Vegetarian</div>
+      </div>
+      <div class="type-row">
+        <div class="key"><b>Mono</b>JetBrains · 12</div>
+        <div class="t-mono">2 cups · 1 tbsp · 350°F · 25 min</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCALE -->
+  <section id="scale">
+    <div class="section-head">
+      <div class="t-eyebrow">04 · Spacing, radius, shadow</div>
+      <h2 class="t-h1" style="margin: 4px 0 0;">Scale</h2>
+      <p class="t-body muted" style="margin: 6px 0 0;">A 4px base. Radii stay soft but never rounded-pill except for chips. Shadows are warm-tinted and never above 12% opacity.</p>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-4); margin-bottom: var(--s-3);">Spacing scale</div>
+    <div class="scale-grid">
+      <div class="scale-tile"><div class="box" style="width: 4px; height: 4px;"></div><span class="label">s-1 · 4</span></div>
+      <div class="scale-tile"><div class="box" style="width: 8px; height: 8px;"></div><span class="label">s-2 · 8</span></div>
+      <div class="scale-tile"><div class="box" style="width: 12px; height: 12px;"></div><span class="label">s-3 · 12</span></div>
+      <div class="scale-tile"><div class="box" style="width: 16px; height: 16px;"></div><span class="label">s-4 · 16</span></div>
+      <div class="scale-tile"><div class="box" style="width: 24px; height: 24px;"></div><span class="label">s-6 · 24</span></div>
+      <div class="scale-tile"><div class="box" style="width: 32px; height: 32px;"></div><span class="label">s-8 · 32</span></div>
+      <div class="scale-tile"><div class="box" style="width: 48px; height: 48px;"></div><span class="label">s-12 · 48</span></div>
+      <div class="scale-tile"><div class="box" style="width: 64px; height: 64px;"></div><span class="label">s-16 · 64</span></div>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-6); margin-bottom: var(--s-3);">Radius</div>
+    <div class="radius-grid">
+      <div class="radius-tile" style="border-radius: var(--r-sm);">r-sm · 4</div>
+      <div class="radius-tile" style="border-radius: var(--r-md);">r-md · 8</div>
+      <div class="radius-tile" style="border-radius: var(--r-lg);">r-lg · 14</div>
+      <div class="radius-tile" style="border-radius: var(--r-pill);">r-pill</div>
+    </div>
+
+    <div class="t-eyebrow" style="margin-top: var(--s-6); margin-bottom: var(--s-3);">Shadow</div>
+    <div class="shadow-grid">
+      <div class="shadow-tile" style="box-shadow: var(--shadow-sm); border: 1px solid var(--line);">shadow-sm</div>
+      <div class="shadow-tile" style="box-shadow: var(--shadow-md);">shadow-md</div>
+      <div class="shadow-tile" style="box-shadow: var(--shadow-lg);">shadow-lg</div>
+    </div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section id="components">
+    <div class="section-head">
+      <div class="t-eyebrow">05 · Components</div>
+      <h2 class="t-h1" style="margin: 4px 0 0;">Building blocks</h2>
+      <p class="t-body muted" style="margin: 6px 0 0;">A small kit, kept intentionally narrow.</p>
+    </div>
+
+    <div class="comp-grid">
+      <div class="card comp-tile">
+        <div class="t-eyebrow" style="margin-bottom: var(--s-3);">Buttons</div>
+        <div class="demo">
+          <button class="btn btn-primary">Save recipe</button>
+          <button class="btn">Edit</button>
+          <button class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+
+      <div class="card comp-tile">
+        <div class="t-eyebrow" style="margin-bottom: var(--s-3);">Chips &amp; tags</div>
+        <div class="demo">
+          <span class="chip">vegetarian</span>
+          <span class="chip">30 min</span>
+          <span class="chip chip-accent">uses lemons ⚠</span>
+          <span class="chip chip-fill">all</span>
+        </div>
+      </div>
+
+      <div class="card comp-tile">
+        <div class="t-eyebrow" style="margin-bottom: var(--s-3);">Input</div>
+        <div class="demo" style="flex-direction: column; align-items: stretch; gap: 10px;">
+          <input class="input" placeholder="Search 87 recipes…" />
+          <input class="input" value="lemon chicken & spinach" />
+        </div>
+      </div>
+
+      <div class="card comp-tile">
+        <div class="t-eyebrow" style="margin-bottom: var(--s-3);">Recipe card</div>
+        <div style="display: flex; gap: var(--s-3); padding: var(--s-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--paper);">
+          <div style="width: 64px; height: 64px; background: var(--paper-soft); border-radius: 6px; flex-shrink: 0;"></div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-family: var(--font-serif); font-size: 18px; line-height: 1.15;">Tomato Galette</div>
+            <div class="t-meta" style="margin-top: 2px;">1h · 4 servings</div>
+            <div class="row" style="gap: 6px; margin-top: 8px;">
+              <span class="chip" style="font-size: 11px; padding: 2px 8px;">veg</span>
+              <span class="chip chip-accent" style="font-size: 11px; padding: 2px 8px;">96%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VOICE -->
+  <section id="voice">
+    <div class="section-head">
+      <div class="t-eyebrow">06 · Voice &amp; tone</div>
+      <h2 class="t-h1" style="margin: 4px 0 0;">How it sounds</h2>
+      <p class="t-body muted" style="margin: 6px 0 0;">Like a friend who cooks — encouraging, never bossy. Lowercase headlines feel approachable; sentence-case body keeps it readable.</p>
+    </div>
+
+    <div class="voice">
+      <div class="pill">
+        <h4>We do</h4>
+        <ul>
+          <li>"tonight, something warm."</li>
+          <li>"your lemons are about to turn — let's use them."</li>
+          <li>"saved to your box."</li>
+          <li>Plain language, short sentences, lowercase headers.</li>
+        </ul>
+      </div>
+      <div class="pill">
+        <h4>We don't</h4>
+        <ul>
+          <li>"Optimize Your Culinary Workflow"</li>
+          <li>"INGREDIENTS DETECTED ✓"</li>
+          <li>Marketing exclamations, ALL-CAPS shouting.</li>
+          <li>Foodie jargon, dish-name puns, food emoji walls.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+
+<script>
+(async () => {
+  try { await document.fonts.ready; } catch (e) {}
+  await new Promise(r => setTimeout(r, 800));
+  window.print();
+})();
+</script>
+</body>
+</html>
